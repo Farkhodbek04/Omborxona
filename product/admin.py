@@ -23,6 +23,11 @@ class ProductOutputAdmin(admin.ModelAdmin):
     list_display = ['product', 'description', 'removed_at', 'responsible_user_id']
 
 
+@admin.register(Unit)
+class UnitAdmin(admin.ModelAdmin):
+    list_display = ['name', ]
+
+
 class CustomUserAdmin(BaseUserAdmin):
     list_display = ('username', 'email', 'first_name', 'last_name', 'position', 'tel_number',
                     'created_at', 'is_staff')  # Specify the fields to display in the admin interface

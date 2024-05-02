@@ -1,4 +1,5 @@
 from django.db import models
+from django.template.defaultfilters import slugify
 from django.contrib.auth.models import AbstractUser
 
 
@@ -31,21 +32,40 @@ class Category(CoreModel):
         return self.name
 
 
+class Unit(CoreModel):
+    name = models.CharField(max_length=50)
+
+    class Meta:
+        verbose_name = "O'lchov"
+        verbose_name_plural = "O'lchovlar"
+
+    def __str__(self):
+        return self.name
+
+
 class Product(CoreModel):
     class Meta:
         verbose_name = 'Maxsulot'
         verbose_name_plural = 'Maxsulotlar'
+        unique_together = ('category_id', 'price', 'name')
 
     name = models.CharField(max_length=255)
     category_id = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='products')
-    unit = models.CharField(max_length=30)
+    unit_id = models.ForeignKey(Unit, on_delete=models.SET_NULL, null=True)
     quantity = models.DecimalField(decimal_places=2, max_digits=8)
     password = models.CharField(max_length=20)
     price = models.DecimalField(decimal_places=2, max_digits=8)
     description = models.TextField()
+    product_slug = models.SlugField(default=slugify(name))
 
     def __str__(self):
         return f'{self.name} - {self.price} UZS'
+    
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.product_slug = slugify(f"{self.category_id}-{self.name}-{self.price}-{self.pk}")        
+        super(Product, self).save(*args, **kwargs)
+
 
 
 class ProductInput(models.Model):
