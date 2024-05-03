@@ -4,7 +4,7 @@ from django.contrib.auth.models import AbstractUser
 
 
 class User(AbstractUser):
-    position = models.CharField(max_length=100)
+    position = models.SmallIntegerField(choices=((0,'bugalter'),(1,'omborchi')))
     tel_number = models.CharField(max_length=13)
     created_at = models.DateTimeField(auto_now_add=True)
 
