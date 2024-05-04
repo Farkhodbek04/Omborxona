@@ -53,7 +53,7 @@ class Product(CoreModel):
     category_id = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='products')
     unit_id = models.ForeignKey(Unit, on_delete=models.SET_NULL, null=True)
     quantity = models.DecimalField(decimal_places=2, max_digits=8)
-    password = models.CharField(max_length=20)
+    password = models.IntegerField(unique=True)
     price = models.DecimalField(decimal_places=2, max_digits=8)
     description = models.TextField()
     product_slug = models.SlugField(default=slugify(name))
@@ -87,10 +87,11 @@ class ProductInput(models.Model):
 
 class ProductOutput(models.Model):
     class Meta:
-        verbose_name = 'Chqiqm'
+        verbose_name = 'Chiqim'
         verbose_name_plural = 'Chiqimlar'
 
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
+    removed_quantity = models.DecimalField(max_digits=8, decimal_places=2)
     description = models.TextField()
     removed_at = models.DateTimeField(auto_now_add=True)
     responsible_user_id = models.ForeignKey(User,
