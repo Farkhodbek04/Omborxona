@@ -27,7 +27,7 @@ class SetStorekeeperView(APIView):
     def get(self, request, pk=None):
         if pk is not None:
             # Retrieve a specific user by ID
-            user = get_object_or_404(User, id=pk)
+            user = get_object_or_404(User, pk=pk)
             serializer = UserSerializer(user)
             return Response(serializer.data)
         else:
@@ -51,7 +51,7 @@ class SetStorekeeperView(APIView):
             if request.user.position != 0:  # Assuming 0 represents the position of an accountant
                 return Response({"xabar": "Sizga o'chirishga ruxsat yo'q."}, status=status.HTTP_403_FORBIDDEN)
             
-            user = get_object_or_404(User, id=pk)
+            user = get_object_or_404(User, pk=pk)
             user.delete()
             return Response({"xabar": "Omborchi o'chirildi."}, status=status.HTTP_204_NO_CONTENT)
     

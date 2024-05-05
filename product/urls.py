@@ -11,8 +11,11 @@ router.register(r'units', UnitCRUDview, basename='unit')
 urlpatterns = [
     path('', include(router.urls)),
     path('storekeepers/', SetStorekeeperView.as_view(), name='storekeeper-list'), # get list of all storekeepers
-    path('storekeepers/<int:pk>/', SetStorekeeperView.as_view(), name='storekeeper-detail'), # Update, delete, get specific storekeeper with id
+    path('storekeepers/<int:pk>/', SetStorekeeperView.as_view(), name='storekeeper-detail'), # Update, delete, get specific storekeeper with pk
     path('product/', ProductCRUDView.as_view() ), # get all products
-    path('product/<int:pk>/', ProductCRUDView.as_view()), # Update, delete, get product with id
-
+    path('product/<int:pk>/', ProductCRUDView.as_view()), # Update, delete, get product with pk
+    path('product-input/', ProductInputView.as_view()),
+    path('product-input/<int:pk>/', ProductInputView.as_view()),
+    path('product-output/', ProductOutputView.as_view()),
+    path('product-output/<int:pk>/', ProductOutputView.as_view()),
 ]
