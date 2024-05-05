@@ -1,10 +1,10 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
 from .models import *
-from .serializers import CategorySerializer, ProductSerializer, UnitSerializer, UserSerializer
+from .serializers import CategorySerializer, ProductSerializer, UnitSerializer, UserSerializer, ProductInputSerializer, ProductOutputSerializer
 
 class CategoryCRUDview(viewsets.ModelViewSet):
 
@@ -41,7 +41,7 @@ class SetStorekeeperView(APIView):
         if serializer.is_valid():
             # Check if the user is an accountant
             if request.user.position != 0:  # Assuming 0 represents the position of an accountant
-                return Response({"message": "You do not have permission to perform this action"}, status=status.HTTP_403_FORBIDDEN)
+                return Response({"xabar": "Sizga omborchi yaratishga ruxsat yo'q."}, status=status.HTTP_403_FORBIDDEN)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -49,18 +49,18 @@ class SetStorekeeperView(APIView):
     def delete(self, request, pk):
             # Check if the user is an accountant
             if request.user.position != 0:  # Assuming 0 represents the position of an accountant
-                return Response({"message": "You do not have permission to perform this action"}, status=status.HTTP_403_FORBIDDEN)
+                return Response({"xabar": "Sizga o'chirishga ruxsat yo'q."}, status=status.HTTP_403_FORBIDDEN)
             
             user = get_object_or_404(User, id=pk)
             user.delete()
-            return Response({"message": "User deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+            return Response({"xabar": "Omborchi o'chirildi."}, status=status.HTTP_204_NO_CONTENT)
     
     def put(self, request, pk):
         try:
             user = User.objects.get(pk=pk)
             serializer = UserSerializer(user, data=request.data)
-        except user.DoesNotExist:
-            return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        except User.DoesNotExist:
+            return Response({"xabar": "omborchi topilmadi."}, status=status.HTTP_404_NOT_FOUND)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -76,7 +76,7 @@ class ProductCRUDView(APIView):
                 serializer = ProductSerializer(queryset)
                 return Response(serializer.data)
             except Product.DoesNotExist:
-                return Response({"message": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"xabar": "Maxsulot topilmadi."}, status=status.HTTP_404_NOT_FOUND)
         else:
             queryset = Product.objects.all()
             serializer = ProductSerializer(queryset, many=True)
@@ -86,7 +86,7 @@ class ProductCRUDView(APIView):
         serializer = ProductSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({"message": "Your product has been created successfuly!"})
+            return Response({"xabar": "Maxsulot yaratildi!"})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def put(self, request, pk):
@@ -94,16 +94,104 @@ class ProductCRUDView(APIView):
             product = Product.objects.get(pk=pk)
             serializer = ProductSerializer(product, data=request.data)
         except Product.DoesNotExist:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"xabar": "Maxsulot topilmadi"}, status=status.HTTP_400_BAD_REQUEST)
         if serializer.is_valid():
             serializer.save()
+            return Response({"xabar": "Maxsulot tahrirlandi"})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request, pk):
         try:
             item = Product.objects.get(pk=pk)
             item.delete()
-            return Response({"message": "The product has been deleted."})
-        except item.DoesNotExist:
-            return Response({"message": "Product does not exist!"})
+            return Response({"xabar": "Maxsulot o'chirildi."})
+        except Product.DoesNotExist:
+            return Response({"xabar": "Maxsulot topilmadi!"})
+        
+
+class ProductInputView(APIView):
+
+    def get(self, request, pk=None):
+        if pk is not None:
+            try:
+                item = ProductInput.objects.get(pk=pk)
+                serializer = ProductInputSerializer(item)
+                return Response(serializer.data)
+            except ProductInput.DoesNotExist:
+                return Response({"xabar": "Kirim topilmadi!"})
+        else:
+            items = ProductInput.objects.all()
+            serializer = ProductInputSerializer(items, many=True)
+            return(serializer.data)
+        
+    def post(self, request):
+        serializer = ProductInputSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"xabar": "Yangi Kirim yaratildi!"})
+        else:
+            return Response( serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    def put(self, request, pk):
+        try:
+            item = ProductInput.objects.get(pk=pk)
+            serializer = ProductInputSerializer(item, data=request.data)
+        except ProductInput.DoesNotExist:
+            return Response({"xabar": "Kirim topilmadi"})
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"xabar": "Kirim taxrirlandi!"})
+        return Response(serializer.errors)
+
+    def delete(self, request, pk):
+        try:
+            item = ProductInput.objects.get(pk=pk)
+            item.delete()
+            return Response({"xabar": "Kirim o'chirildi!"})
+        except ProductInput.DoesNotExist:
+            return Response({"xabar": "Kirim topilmadi!"})
+
+
+class ProductOutputView(APIView):
+
+    def get(self, request, pk=None):
+        if pk:
+            try:
+                item = ProductOutput.objects.get(pk=pk)
+                serializer = ProductOutputSerializer(item)
+                return Response(serializer.data)
+            except ProductOutput.DoesNotExist:
+                return Response({"xabar": "Chiqim topilmadi."}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            items = ProductOutput.objects.all()  
+            serializer = ProductOutputSerializer(items, many=True)
+            return Response(serializer.data)
+    
+    def post(self, request):
+        serializer = ProductOutputSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"xabar": "Yangi chiqim yaratildi!"})
+        else:
+            return Response( serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    def put(self, request, pk):
+        try:
+            item = ProductOutput.objects.get(pk=pk)
+            serializer = ProductOutputSerializer(item, data=request.data)
+        except ProductOutput.DoesNotExist:
+            return Response({"xabar": "Chiqim topilmadi."}, status=status.HTTP_400_BAD_REQUEST)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"xabar": "Chiqim taxrirlandi!"})
+        else:
+            return Response( serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request, pk):
+        try:
+            item = ProductOutput.objects.get(pk=pk)
+            item.delete()
+            return Response({"xabar": "Chiqim o'chirildi!"})
+        except ProductOutput.DoesNotExist:
+            return Response({"xabar": "Chiqim topilmadi."}, status=status.HTTP_400_BAD_REQUEST)
         
